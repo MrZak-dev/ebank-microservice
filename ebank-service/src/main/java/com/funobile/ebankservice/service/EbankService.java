@@ -1,6 +1,8 @@
 package com.funobile.ebankservice.service;
 
 import com.funobile.ebankservice.entity.BankAccount;
+import com.funobile.ebankservice.entity.Customer;
+import com.funobile.ebankservice.feign.CustomerRestClient;
 import com.funobile.ebankservice.repository.BankAccountRepository;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +14,11 @@ import java.util.UUID;
 public class EbankService {
 
     private final BankAccountRepository bankAccountRepository;
+    private final CustomerRestClient customerRestClient;
 
-    public EbankService(BankAccountRepository bankAccountRepository) {
+    public EbankService(BankAccountRepository bankAccountRepository, CustomerRestClient customerRestClient) {
         this.bankAccountRepository = bankAccountRepository;
+        this.customerRestClient = customerRestClient;
     }
 
 
@@ -24,7 +28,15 @@ public class EbankService {
 
 
     public BankAccount getBankAccountById(String id) {
-        return bankAccountRepository.findById(id).orElseThrow(() -> new RuntimeException("Bank account not found"));
+        BankAccount bankAccount = bankAccountRepository
+                .findById(id)
+                .orElseThrow(
+                        () -> new RuntimeException("Bank account not found")
+                );
+        bankAccount.setCustomer(customerRestClient.getCustomerById(bankAccount.getCustomerId()));
+
+        return bankAccount;
+
     }
 
 
@@ -34,9 +46,15 @@ public class EbankService {
 
 
     public BankAccount createBankAccount(BankAccount bankAccount) {
-        bankAccount.setId(UUID.randomUUID().toString());
-        bankAccount.setCreatedAt(new Date());
-        return bankAccountRepository.save(bankAccount);
+        try {
+            Customer customer = customerRestClient.getCustomerById(bankAccount.getCustomerId());
+            bankAccount.setId(UUID.randomUUID().toString());
+            bankAccount.setCreatedAt(new Date());
+            bankAccount.setCustomerId(customer.getId());
+            return bankAccountRepository.save(bankAccount);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
 

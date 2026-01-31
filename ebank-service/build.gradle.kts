@@ -8,6 +8,7 @@ group = "com.funobile"
 version = "0.0.1-SNAPSHOT"
 description = "ebank-service"
 
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -33,6 +34,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-config")
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+    implementation("io.github.resilience4j:resilience4j-spring-boot3:2.2.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.h2database:h2")
